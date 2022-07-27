@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"rabbitmqdddv2/pkg/domain/rabbitmq"
 	"rabbitmqdddv2/pkg/domain/tablestorage"
 	"strconv"
 
@@ -18,104 +19,18 @@ type TableStorageRepository struct {
 var _ tablestorage.ITableStorageRepository = (*TableStorageRepository)(nil)
 
 func (repo *TableStorageRepository) SubTS(log *tablestorage.TableStorage, logger *zap.Logger, topic string) {
-	repo.Table(logger)
-	repo.Persist(log, logger, topic)
-}
-
-func (repo *TableStorageRepository) Persist(log *tablestorage.TableStorage, logger *zap.Logger, topic string) {
+	// repo.Table(logger)
 	count := repo.GetLength(logger) + 1
 	log.RowKey = strconv.Itoa(count)
 	marshalled, err := json.Marshal(log)
 	if err != nil {
-		panic(err)
+		log.Body = "Could not marshal log"
+		rabbitmq.Log(log.Msg, log.Body, topic, logger)
 	}
 	_, err = repo.client.AddEntity(context.TODO(), marshalled, nil)
 	if err != nil {
-		panic(err)
-	}
-	// for err2 != nil { //pretty inefficient, find something quicker
-	// 	count = count + 1
-	// 	fmt.Println(count)
-
-	// 	log.RowKey = strconv.Itoa(count)
-	// 	marshalled, err := json.Marshal(log)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// 	_, err2 = repo.client.AddEntity(context.TODO(), marshalled, nil) // TODO: Check access policy, need Storage Table Data Contributor role
-	// }
-}
-
-// func (repo *TableStorageRepository) Channel(logger *zap.Logger, topic string) {
-// 	manager := usago.NewChannelManager("amqp://guest:guest@localhost:55001/", logger)
-// 	bldr := usago.NewChannelBuilder().WithQueue(
-// 		topic,
-// 		false,
-// 		false,
-// 		false,
-// 		false,
-// 		nil,
-// 	).WithConfirms(true)
-// 	chnl, err := manager.NewChannel(*bldr)
-// 	if err != nil {
-// 		_, src, line, _ := runtime.Caller(0)
-// 		repo.Log("", "", src, line, logger, "failed to create channel")
-// 		fmt.Printf("failed to create channel")
-// 		return
-// 	}
-// 	consumer, _ := chnl.RegisterConsumer(
-// 		topic,
-// 		"",
-// 		true,
-// 		false,
-// 		false,
-// 		false,
-// 		nil,
-// 	)
-// 	fmt.Println("CONSUMER REGISTERED")
-// 	go func() {
-// 		for {
-// 			msg := <-consumer
-// 			_, src, line, _ := runtime.Caller(0)
-// 			repo.Log(string(msg.Body), msg.RoutingKey, src, line, logger, "message read")
-// 		}
-
-// 	}()
-
-// }
-
-// func (repo *TableStorageRepository) Log(body string, routingKey string, src string, line int, logger *zap.Logger, message string) {
-
-// 	count := repo.GetLength(logger) + 1
-// 	log.RowKey = strconv.Itoa(count)
-// 	fmt.Println(log)
-// 	marshalled, err := json.Marshal(log)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	_, err = repo.client.AddEntity(context.TODO(), marshalled, nil)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	// for err2 != nil { //pretty inefficient, find something quicker
-// 	// 	count = count + 1
-// 	// 	fmt.Println(count)
-
-// 	// 	log.RowKey = strconv.Itoa(count)
-// 	// 	marshalled, err := json.Marshal(log)
-// 	// 	if err != nil {
-// 	// 		panic(err)
-// 	// 	}
-// 	// 	_, err2 = repo.client.AddEntity(context.TODO(), marshalled, nil) // TODO: Check access policy, need Storage Table Data Contributor role
-// 	// }
-// 	fmt.Println("DONE")
-
-// }
-
-func (repo *TableStorageRepository) Table(logger *zap.Logger) {
-	_, err := repo.client.CreateTable(context.TODO(), nil)
-	if err != nil {
-		fmt.Println("Table Created")
+		log.Body = "Could not add item to storage table"
+		rabbitmq.Log(log.Msg, log.Body, topic, logger)
 	}
 }
 
@@ -133,13 +48,14 @@ func (repo *TableStorageRepository) GetLength(logger *zap.Logger) int {
 
 }
 
-func Ptr[T any](v T) *T {
-	return &v
-}
+func NewTableStorageRepo(newclient *aztables.Client) *TableStorageRepository {
+	_, err := newclient.CreateTable(context.TODO(), nil)
+	if err != nil {
 
-func NewTableStorageRepo(client *aztables.Client) *TableStorageRepository {
-	fmt.Println(client)
+	} else {
+		fmt.Println("Creating Table")
+	}
 	return &TableStorageRepository{
-		client: client,
+		client: newclient,
 	}
 }

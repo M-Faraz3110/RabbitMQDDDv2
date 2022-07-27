@@ -25,7 +25,9 @@ type RabbitMqController struct {
 // @Success 200 {object} []res.ForecastDetailed{}
 // @Router /api/v1/forecasts/ [get]
 func (ctrl *RabbitMqController) Csub(logger *zap.Logger, topic string) {
+
 	ctrl.svc.SubService(topic, logger)
+
 }
 
 func NewRabbitMqController(

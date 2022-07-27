@@ -31,10 +31,11 @@ func (svc *RabbitMqService) SubService(
 	).WithConfirms(true)
 	chnl, err := manager.NewChannel(*bldr)
 	if err != nil {
-		// _, src, line, _ := runtime.Caller(0)
-		// repo.Log("", "", src, line, logger, "failed to create channel")
-		fmt.Printf("failed to create channel")
+
+		log := Log("could not create channel", "", topic, logger)
+		svc.repo.SubTS(log, logger, topic)
 		return
+
 	}
 	consumer, _ := chnl.RegisterConsumer(
 		topic,
@@ -45,18 +46,18 @@ func (svc *RabbitMqService) SubService(
 		false,
 		nil,
 	)
+	fmt.Println("Starting Listener")
 	go func() {
 		for {
 			msg := <-consumer
-			log := svc.Log("message read", string(msg.Body), topic, logger)
+			log := Log("message read", string(msg.Body), topic, logger)
 			svc.repo.SubTS(log, logger, topic)
-			// repo.Log(string(msg.Body), msg.RoutingKey, src, line, logger, "message read")
 		}
 	}()
 
 }
 
-func (svc *RabbitMqService) Log(
+func Log(
 	message string,
 	body string,
 	topic string,

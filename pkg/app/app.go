@@ -49,7 +49,7 @@ func NewApp(
 
 func (a *app) startService(topic string) {
 
-	// - Setting up logger
+	// Calling Listener Function
 	a.v1fcast.Csub(a.lgr.NewLogger(), topic)
 }
 
