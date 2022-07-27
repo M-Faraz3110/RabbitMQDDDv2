@@ -9,6 +9,7 @@ import (
 	"rabbitmqdddv2/pkg/infra/repos"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/BetaLixT/usago"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -32,8 +33,8 @@ func TestNewChannelManager(t *testing.T) {
 		return
 	}
 	// consume
-	for i := 0; i < 10; i++ {
-		fmt.Println("Iteration" + strconv.Itoa(i))
+	i := 0
+	for {
 		body := "testmf" + strconv.Itoa(i)
 		_, err = chnl.Publish(
 			"",
@@ -57,12 +58,12 @@ func TestNewChannelManager(t *testing.T) {
 				},
 			)
 		}
-		fmt.Println("MESSAGE SENT")
 		client := db.GetClient()
 		repo := repos.NewTableStorageRepo(client)
 		svc := rabbitmq.NewRabbitMqService(repo)
 		v1.NewRabbitMqController(svc, lf).Csub(lf.NewLogger(), "Notification")
-
+		i += 1
+		time.Sleep(2 * time.Second)
 	}
 	res := "SUCCESS"
 	assert.Equal(t, res, "SUCCESS")
