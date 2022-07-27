@@ -18,8 +18,7 @@ type TableStorageRepository struct {
 
 var _ tablestorage.ITableStorageRepository = (*TableStorageRepository)(nil)
 
-func (repo *TableStorageRepository) SubTS(log *tablestorage.TableStorage, logger *zap.Logger, topic string) {
-	// repo.Table(logger)
+func (repo *TableStorageRepository) SubTS(log *tablestorage.TableStorage, logger *zap.Logger, topic string) { //Add to DB
 	count := repo.GetLength(logger) + 1
 	log.RowKey = strconv.Itoa(count)
 	marshalled, err := json.Marshal(log)
@@ -34,7 +33,7 @@ func (repo *TableStorageRepository) SubTS(log *tablestorage.TableStorage, logger
 	}
 }
 
-func (repo *TableStorageRepository) GetLength(logger *zap.Logger) int {
+func (repo *TableStorageRepository) GetLength(logger *zap.Logger) int { //to assign row key
 	listPager := repo.client.NewListEntitiesPager(nil)
 	total_count := 0
 	for listPager.More() {
