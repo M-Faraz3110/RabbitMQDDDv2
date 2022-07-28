@@ -12,12 +12,11 @@ import (
 
 	"github.com/BetaLixT/usago"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestNewChannelManager(t *testing.T) {
 	lf, err := logger.NewLoggerFactory()
-	manager := usago.NewChannelManager("amqp://guest:guest@localhost:55001/", lf.NewLogger())
+	manager := usago.NewChannelManager("<RABBITMQ_CONNECTION_STRING>", lf.NewLogger())
 	bldr := usago.NewChannelBuilder().WithQueue(
 		"Notification",
 		false,
@@ -36,7 +35,8 @@ func TestNewChannelManager(t *testing.T) {
 	repo := repos.NewTableStorageRepo(client)
 	svc := rabbitmq.NewRabbitMqService(repo)
 	v1.NewRabbitMqController(svc, lf).Csub(lf.NewLogger(), "Notification")
-	for i := 0; i < 10; i++ {
+	i := 0
+	for {
 		body := "testmf" + strconv.Itoa(i)
 		_, err = chnl.Publish(
 			"",
@@ -60,8 +60,6 @@ func TestNewChannelManager(t *testing.T) {
 				},
 			)
 		}
-
+		i += 1
 	}
-	res := "SUCCESS"
-	assert.Equal(t, res, "SUCCESS")
 }

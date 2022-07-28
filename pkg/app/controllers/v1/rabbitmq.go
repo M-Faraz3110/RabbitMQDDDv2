@@ -10,7 +10,6 @@ import (
 type RabbitMqController struct {
 	svc    *rabbitmq.RabbitMqService
 	logger *zap.Logger
-	// channel *usago.ChannelContext
 }
 
 // @BasePath

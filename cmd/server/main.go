@@ -7,7 +7,7 @@ import (
 
 func main() {
 	var wg sync.WaitGroup
-	wg.Add(1)
+	wg.Add(1) //Go routine to keep listening
 	app.Start()
 	wg.Wait()
 }

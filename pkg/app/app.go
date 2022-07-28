@@ -26,7 +26,7 @@ func Start() {
 	if err != nil {
 		panic(err)
 	}
-	app.startService("Notification")
+	app.startService("<ROUTING_KEY>")
 }
 
 type app struct {

@@ -8,8 +8,8 @@ import (
 )
 
 func GetClient() *aztables.Client {
-	accountName := "gostorageaccount123" //export AZURE_STORAGE_ACCOUNT=gostorageaccount123   export AZURE_TABLE_NAME=gostoragetable
-	tableName := "testlogs"
+	accountName := "<AZURE_ACCOUNT_NAME>"
+	tableName := "<TABLE_NAME>"
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		panic(err)

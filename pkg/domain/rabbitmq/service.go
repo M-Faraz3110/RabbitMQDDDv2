@@ -20,7 +20,7 @@ func (svc *RabbitMqService) SubService(
 	topic string,
 	logger *zap.Logger,
 ) {
-	manager := usago.NewChannelManager("<RABBITMQ_SERVER_URL>", logger)
+	manager := usago.NewChannelManager("<RABBITMQ_CONNECTION_STRING>", logger)
 	bldr := usago.NewChannelBuilder().WithQueue(
 		topic,
 		false,
