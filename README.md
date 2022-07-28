@@ -11,7 +11,7 @@ Has main.go that starts the app and waits for all goroutines to finish.
 Contains three folders namely app, domain and infra. App has the constructor, the Start() function called by main and the dependencyset for wire. This is also where you can change the routingkey to listen to.  We have two folders within domain which are rabbitmq (basically sets up the rabbitmq channel the app will be listening on, while also using the logger) and tablestorage (which has everything we need to store the logs on azure table storage). 
 
 #### app 
-Contains the controllers folder (which will call the service), app.go, and since we're using wire for DI we also have wire.go and wire_gen.go. Wire.go uses the dependencyset(s) needed and wire_gen.go is automatically generated.
+Contains the controllers folder (which will call the service), app.go, and since we're using wire for DI we also have wire.go and wire_gen.go. Wire.go uses the dependencyset(s) needed and wire_gen.go is automatically generated. Routing key can be changed in Start().
 
 #### domain 
 domain/rabbitmq has the service that will be exposed and it calls the function declared in tablestorage/externals. This means /tablestorage does not have a service of its own that needs to be exposed while /rabbitmq does not need anything in its externals.go. rabbitmqservice first creates the channel and then calls the function required to store the log in the db. Also starts the goroutine we need to make sure the channel stays open as long as the app stays running, which is until the app is stopped manually. domain.go creates a new dependencyset with the rabbitmqservice. 
