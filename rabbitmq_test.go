@@ -37,7 +37,7 @@ func TestNewChannelManager(t *testing.T) {
 	svc := rabbitmq.NewRabbitMqService(repo)
 	v1.NewRabbitMqController(svc, lf).Csub(lf.NewLogger(), "Notification")
 	i := 0
-	for i < 10 {
+	for i < 10 { //sends 10 messages
 		body := "testmf" + strconv.Itoa(i)
 		_, err = chnl.Publish(
 			"",
